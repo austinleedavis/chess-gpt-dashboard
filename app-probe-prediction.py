@@ -492,10 +492,20 @@ class ProbeAnalysisApp:
                 **kwargs,
             )
         )
+        if template == "plotly_dark":
+            paper_bgcolor='#212529'
+            plot_bgcolor='#212529'
+        else:
+            paper_bgcolor="#ffffff"
+            plot_bgcolor='#ffffff'
+
+
         fig.update_layout(
             xaxis_title="Token",
             yaxis_title="Layer",
             margin=dict(l=10, r=10, t=30, b=10),
+            paper_bgcolor=paper_bgcolor,
+            plot_bgcolor=plot_bgcolor,
             template=template,
         )
         return fig
@@ -574,7 +584,7 @@ class ProbeAnalysisApp:
                 showscale=True,
                 zmin=-zscale,
                 zmax=zscale,
-                colorscale="RdBu",
+                colorscale="balance", #RdBu
                 template=template,
             )
 
