@@ -62,7 +62,6 @@ class ProbeAnalysisApp:
                     dcc.Store(id="llm-update-trigger"),
                     dcc.Store(id="probe-update-trigger"),
                     dcc.Store(id="cached-game-data"),
-                    # dcc.Store(id="layer-index-data"),
                 ]
             )
 
@@ -77,7 +76,6 @@ class ProbeAnalysisApp:
                                 className="page-header",
                                 children=[
                                     html.H1("Probe Inspector!"),
-                                    # html.Small("View output predictions for probe"),
                                 ],
                             )
                         ],
@@ -362,15 +360,6 @@ class ProbeAnalysisApp:
                         className="col-md-8 d-flex",
                         children=[
                             dcc.Graph(id="heatmap-errors", style={"height": "250px", "flex": "1"}),
-                            # html.Div(
-                            #     style={
-                            #         "marginLeft": "20px",
-                            #         "display": "flex",
-                            #         "flexDirection": "column",
-                            #         "alignItems": "center",
-                            #     },
-                            #     children=[
-                            # html.Label("Clamp Errors", style={"textAlign": "center"}),
                             dcc.Slider(
                                 id="clamp-errors-slider",
                                 min=0.05,
@@ -378,7 +367,6 @@ class ProbeAnalysisApp:
                                 step=0.05,
                                 value=1.0,
                                 marks=None,
-                                # marks={i / 20.0: f"{i/20}" for i in range(20)},
                                 vertical=True,
                                 verticalHeight="250",
                                 tooltip={
@@ -387,8 +375,6 @@ class ProbeAnalysisApp:
                                     "placement": "right",
                                 },
                             ),
-                            #     ],
-                            # ),
                         ],
                     ),
                     html.Div(className="col-md-2"),
@@ -492,11 +478,6 @@ class ProbeAnalysisApp:
 
         errors = predictions - actuals
 
-        # errors = self.interleave_arrays(
-        #     self.compute_errors(labels, preds, "white", neg=False),
-        #     self.compute_errors(preds, labels, "black", neg=False),
-        # )
-
         moves = data.metadata["transcripts"][0].split()
         return errors, predictions, actuals, moves, record, preds
 
@@ -535,7 +516,9 @@ class ProbeAnalysisApp:
             Input("probe-path", "value"),
         )
         def update_probe(probe_path):
-            self.probe = Probe.from_pretrained(probe_path).train(False).cuda()
+            config_path = hf_hub_download(repo_id=probe_path, filename="config.pt")
+            state_dict_path = hf_hub_download(repo_id=probe_path, filename="state_dict.pt")
+            self.probe = Probe.from_pretrained(os.path.dirname(state_dict_path)).train(False).cuda()
             self.init_collate()
             return {"trigger": True}
 
@@ -693,7 +676,6 @@ class ProbeAnalysisApp:
             }
             template = {True: light_theme, False: dark_theme}[theme]
 
-            # print(f"{move_idx=}")
             record = cached_data["record"]
             transcript = record["Transcript"]
             moves = transcript.split()[: move_idx + 1]
@@ -851,7 +833,6 @@ class ProbeAnalysisApp:
         headers = dict(
             Event=record["Event"],
             Site=record["Site"],
-            # Result=record["Result"],
             Termination=record["Termination"],
         )
         pgn_repr = str(uci_to_pgn(sub_game, headers))
